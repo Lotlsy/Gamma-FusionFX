@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FusionFX | Metals Converter</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <div class="logo">⚡ FusionFX <span>Metals</span></div>
+    <nav>
+      <a href="index.html">Money Converter</a>
+      <a href="metals.html">Metals Converter</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- Metals Converter -->
+    <section class="glass-card">
+      <h3>Spot Metals Converter</h3>
+      <div class="input-group">
+        <select id="fromMetal">
+          <option value="XAU">Gold (XAU)</option>
+        </select>
+        <input type="number" id="metalAmount" value="1">
+        <select id="metalWeight">
+          <option value="gram">Gram</option>
+          <option value="kg">Kilogram</option>
+          <option value="lb">Pound</option>
+          <option value="oz">Ounce</option>
+        </select>
+        <select id="toMetal">
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+          <option value="GBP">GBP</option>
+          <option value="JPY">JPY</option>
+          <option value="AUD">AUD</option>
+          <option value="CAD">CAD</option>
+          <option value="CHF">CHF</option>
+          <option value="CNY">CNY</option>
+          <option value="INR">INR</option>
+          <option value="MYR">MYR</option>
+          <option value="SGD">SGD</option>
+          <option value="THB">THB</option>
+          <option value="PHP">PHP</option>
+          <option value="IDR">IDR</option>
+          <option value="NZD">NZD</option>
+          <option value="HKD">HKD</option>
+          <option value="KRW">KRW</option>
+          <option value="BRL">BRL</option>
+          <option value="ZAR">ZAR</option>
+          <option value="MXN">MXN</option>
+        </select>
+      </div>
+      <button onclick="convertMetal()">Get Spot Price</button>
+      <p class="result-box">Result: <span id="metalResult">---</span></p>
+    </section>
+
+    <!-- Metals Chart -->
+    <section class="glass-card">
+      <h3>Gold Price Trend</h3>
+      <canvas id="metalChart"></canvas>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 FusionFX Metals</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
