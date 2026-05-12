@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FusionFX | Metals Converter</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      ⚡ FusionFX <span>Metals</span>
+      <small>Precious Metals Spot Prices</small>
+    </div>
+    <nav>
+      <a href="index.html">Currency</a>
+      <a href="metals.html" class="active">Metals</a>
+      <a href="shop.html">Gold Shop</a>
+    </nav>
+    <button id="themeToggle" class="theme-btn">☀ / 🌙</button>
+  </header>
+
+  <div class="ticker">
+    <div class="ticker-inner">
+      <span class="ticker-item"><span class="sym">XAU/USD</span> &nbsp;<span class="up">▲ 3 312.40</span></span>
+      <span class="ticker-item"><span class="sym">XAG/USD</span> &nbsp;<span class="up">▲ 32.85</span></span>
+      <span class="ticker-item"><span class="sym">XPT/USD</span> &nbsp;<span class="down">▼ 958.20</span></span>
+      <span class="ticker-item"><span class="sym">XPD/USD</span> &nbsp;<span class="up">▲ 1 024.60</span></span>
+      <span class="ticker-item"><span class="sym">USD/MYR</span> &nbsp;<span class="up">▲ 4.72</span></span>
+      <span class="ticker-item"><span class="sym">XAU/EUR</span> &nbsp;<span class="up">▲ 3 047.10</span></span>
+      <span class="ticker-item"><span class="sym">XAU/USD</span> &nbsp;<span class="up">▲ 3 312.40</span></span>
+      <span class="ticker-item"><span class="sym">XAG/USD</span> &nbsp;<span class="up">▲ 32.85</span></span>
+      <span class="ticker-item"><span class="sym">XPT/USD</span> &nbsp;<span class="down">▼ 958.20</span></span>
+      <span class="ticker-item"><span class="sym">XPD/USD</span> &nbsp;<span class="up">▲ 1 024.60</span></span>
+      <span class="ticker-item"><span class="sym">USD/MYR</span> &nbsp;<span class="up">▲ 4.72</span></span>
+      <span class="ticker-item"><span class="sym">XAU/EUR</span> &nbsp;<span class="up">▲ 3 047.10</span></span>
+    </div>
+  </div>
+
+  <div class="page-hero">
+    <h1>Precious Metals <em>Converter</em></h1>
+    <p>Spot prices for Gold — convert any weight into your preferred currency.</p>
+  </div>
+
+  <main class="container">
+    <section class="glass-card">
+      <h3 class="section-title">
+        Spot Converter
+        <span class="badge">Live</span>
+        <span id="refreshIndicator">⟳</span>
+      </h3>
+      <div class="input-group">
+        <select id="fromMetal">
+          <option value="XAU">🥇 Gold (XAU)</option>
+        </select>
+        <input type="number" id="metalAmount" value="1" min="0" step="any">
+        <select id="metalWeight">
+          <option value="gram">Gram</option>
+          <option value="kg">Kilogram</option>
+          <option value="lb">Pound</option>
+          <option value="oz" selected>Troy oz</option>
+        </select>
+        <select id="toMetal">
+          <option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="GBP">🇬🇧 GBP</option>
+          <option value="JPY">🇯🇵 JPY</option><option value="AUD">🇦🇺 AUD</option><option value="CAD">🇨🇦 CAD</option>
+          <option value="CHF">🇨🇭 CHF</option><option value="CNY">🇨🇳 CNY</option><option value="INR">🇮🇳 INR</option>
+          <option value="MYR">🇲🇾 MYR</option><option value="SGD">🇸🇬 SGD</option><option value="THB">🇹🇭 THB</option>
+          <option value="PHP">🇵🇭 PHP</option><option value="IDR">🇮🇩 IDR</option><option value="NZD">🇳🇿 NZD</option>
+          <option value="HKD">🇭🇰 HKD</option><option value="KRW">🇰🇷 KRW</option><option value="BRL">🇧🇷 BRL</option>
+          <option value="ZAR">🇿🇦 ZAR</option><option value="MXN">🇲🇽 MXN</option>
+        </select>
+      </div>
+      <button onclick="convertMetal()">Get Spot Price</button>
+      <p class="result-box">Value: <span id="metalResult">—</span></p>
+      <p class="change-box">24h Change: <span id="metalChange">—</span></p>
+    </section>
+
+    <section class="glass-card">
+      <h3 class="section-title">Gold Price Trend <span class="badge">5-day</span></h3>
+      <canvas id="metalChart"></canvas>
+    </section>
+
+    <section class="glass-card" style="grid-column: 1 / -1;">
+      <h3 class="section-title">About Precious Metals</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <strong>XAU — Gold</strong>
+          <span>Priced per troy ounce in USD. The ultimate safe-haven asset, used as a store of value and inflation hedge for millennia.</span>
+        </div>
+        <div class="info-item">
+          <strong>XAG — Silver</strong>
+          <span>More industrial than gold — roughly 50% of demand comes from manufacturing. Historically more volatile but higher upside.</span>
+        </div>
+        <div class="info-item">
+          <strong>XPT — Platinum</strong>
+          <span>Rarer than gold in the Earth's crust. Heavily used in auto catalysts; price often tracks manufacturing cycles.</span>
+        </div>
+        <div class="info-item">
+          <strong>XPD — Palladium</strong>
+          <span>Critical for gasoline car catalytic converters. Supply is concentrated in Russia and South Africa, making it geopolitically sensitive.</span>
+        </div>
+      </div>
+      <p style="margin-top:1rem;font-size:0.8rem;color:var(--text-muted)">
+        Spot prices reflect the current market price for immediate delivery. Actual purchase prices include dealer premiums. 
+        <a href="shop.html" style="color:var(--gold)">Browse our gold shop →</a>
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 FusionFX &nbsp;·&nbsp; <a href="shop.html">Buy Gold</a> &nbsp;·&nbsp; Prices via freegoldapi.com</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

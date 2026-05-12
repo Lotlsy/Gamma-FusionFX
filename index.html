@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FusionFX | Currency Converter</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      ⚡ FusionFX <span>Money</span>
+      <small>Live Exchange Rates</small>
+    </div>
+    <nav>
+      <a href="index.html" class="active">Currency</a>
+      <a href="metals.html">Metals</a>
+      <a href="shop.html">Gold Shop</a>
+    </nav>
+    <button id="themeToggle" class="theme-btn">☀ / 🌙</button>
+  </header>
+
+  <!-- Live ticker -->
+  <div class="ticker">
+    <div class="ticker-inner" id="tickerInner">
+      <span class="ticker-item"><span class="sym">USD/EUR</span> &nbsp;<span class="up">▲ 0.92</span></span>
+      <span class="ticker-item"><span class="sym">USD/GBP</span> &nbsp;<span class="down">▼ 0.79</span></span>
+      <span class="ticker-item"><span class="sym">USD/JPY</span> &nbsp;<span class="up">▲ 149.2</span></span>
+      <span class="ticker-item"><span class="sym">USD/MYR</span> &nbsp;<span class="up">▲ 4.72</span></span>
+      <span class="ticker-item"><span class="sym">USD/SGD</span> &nbsp;<span class="up">▲ 1.35</span></span>
+      <span class="ticker-item"><span class="sym">XAU/USD</span> &nbsp;<span class="up">▲ 3 312</span></span>
+      <span class="ticker-item"><span class="sym">BTC/USD</span> &nbsp;<span class="up">▲ 94 200</span></span>
+      <span class="ticker-item"><span class="sym">USD/EUR</span> &nbsp;<span class="up">▲ 0.92</span></span>
+      <span class="ticker-item"><span class="sym">USD/GBP</span> &nbsp;<span class="down">▼ 0.79</span></span>
+      <span class="ticker-item"><span class="sym">USD/JPY</span> &nbsp;<span class="up">▲ 149.2</span></span>
+      <span class="ticker-item"><span class="sym">USD/MYR</span> &nbsp;<span class="up">▲ 4.72</span></span>
+      <span class="ticker-item"><span class="sym">USD/SGD</span> &nbsp;<span class="up">▲ 1.35</span></span>
+      <span class="ticker-item"><span class="sym">XAU/USD</span> &nbsp;<span class="up">▲ 3 312</span></span>
+      <span class="ticker-item"><span class="sym">BTC/USD</span> &nbsp;<span class="up">▲ 94 200</span></span>
+    </div>
+  </div>
+
+  <div class="page-hero">
+    <h1>Currency <em>Converter</em></h1>
+    <p>Real-time exchange rates across 20+ currencies, refreshed every 10 seconds.</p>
+  </div>
+
+  <main class="container">
+    <section class="glass-card">
+      <h3 class="section-title">
+        Convert
+        <span class="badge">Live</span>
+        <span id="refreshIndicator">⟳</span>
+      </h3>
+      <div class="input-group">
+        <select id="fromCurrency">
+          <option value="USD" selected>🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="GBP">🇬🇧 GBP</option>
+          <option value="JPY">🇯🇵 JPY</option><option value="AUD">🇦🇺 AUD</option><option value="CAD">🇨🇦 CAD</option>
+          <option value="CHF">🇨🇭 CHF</option><option value="CNY">🇨🇳 CNY</option><option value="INR">🇮🇳 INR</option>
+          <option value="MYR">🇲🇾 MYR</option><option value="SGD">🇸🇬 SGD</option><option value="THB">🇹🇭 THB</option>
+          <option value="PHP">🇵🇭 PHP</option><option value="IDR">🇮🇩 IDR</option><option value="NZD">🇳🇿 NZD</option>
+          <option value="HKD">🇭🇰 HKD</option><option value="KRW">🇰🇷 KRW</option><option value="BRL">🇧🇷 BRL</option>
+          <option value="ZAR">🇿🇦 ZAR</option><option value="MXN">🇲🇽 MXN</option>
+        </select>
+        <input type="number" id="currencyAmount" value="1" min="0" step="any">
+        <select id="toCurrency">
+          <option value="EUR" selected>🇪🇺 EUR</option><option value="USD">🇺🇸 USD</option><option value="GBP">🇬🇧 GBP</option>
+          <option value="JPY">🇯🇵 JPY</option><option value="AUD">🇦🇺 AUD</option><option value="CAD">🇨🇦 CAD</option>
+          <option value="CHF">🇨🇭 CHF</option><option value="CNY">🇨🇳 CNY</option><option value="INR">🇮🇳 INR</option>
+          <option value="MYR">🇲🇾 MYR</option><option value="SGD">🇸🇬 SGD</option><option value="THB">🇹🇭 THB</option>
+          <option value="PHP">🇵🇭 PHP</option><option value="IDR">🇮🇩 IDR</option><option value="NZD">🇳🇿 NZD</option>
+          <option value="HKD">🇭🇰 HKD</option><option value="KRW">🇰🇷 KRW</option><option value="BRL">🇧🇷 BRL</option>
+          <option value="ZAR">🇿🇦 ZAR</option><option value="MXN">🇲🇽 MXN</option>
+        </select>
+      </div>
+      <button onclick="convertCurrency()">Convert Now</button>
+      <p class="result-box">Result: <span id="currencyResult">—</span></p>
+      <p class="result-box" style="margin-top:0.25rem;font-size:0.8rem;">
+        Rate: <span id="rateDisplay" style="color:var(--text-muted)">—</span>
+      </p>
+    </section>
+
+    <section class="glass-card">
+      <h3 class="section-title">Rate Trend <span class="badge">5-day</span></h3>
+      <canvas id="currencyChart"></canvas>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 FusionFX &nbsp;·&nbsp; <a href="shop.html">Buy Gold</a> &nbsp;·&nbsp; Rates via exchangerate-api.com</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FusionFX | Gold Shop</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      ⚡ FusionFX <span>Shop</span>
+      <small>Buy Physical Gold</small>
+    </div>
+    <nav>
+      <a href="index.html">Currency</a>
+      <a href="metals.html">Metals</a>
+      <a href="shop.html" class="active">Gold Shop</a>
+    </nav>
+    <button id="themeToggle" class="theme-btn">☀ / 🌙</button>
+  </header>
+
+  <!-- Hero -->
+  <div class="shop-hero">
+    <h1>
+      Invest in
+      <span class="line2">Physical Gold</span>
+    </h1>
+    <p>Museum-grade bullion bars and certified coins — priced dynamically against live spot rates.</p>
+    <div class="live-price-pill">
+      <span class="live-dot"></span>
+      Spot: <span id="heroSpotPrice">loading…</span> USD / troy oz
+    </div>
+  </div>
+
+  <div class="shop-layout">
+    <!-- Left: Products -->
+    <div>
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterProducts('all', this)">All Products</button>
+        <button class="filter-btn" onclick="filterProducts('bar', this)">Bars</button>
+        <button class="filter-btn" onclick="filterProducts('coin', this)">Coins</button>
+        <button class="filter-btn" onclick="filterProducts('etf', this)">ETF / Certificate</button>
+      </div>
+
+      <!-- Product grid -->
+      <div class="product-grid" id="productGrid">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+
+    <!-- Right: Cart -->
+    <aside class="cart-sidebar">
+      <div class="cart-title">
+        Shopping Cart
+        <span class="cart-count-badge" id="cartBadge">0</span>
+      </div>
+
+      <div id="cartItems">
+        <div class="cart-empty" id="cartEmpty">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <div>Your cart is empty</div>
+        </div>
+      </div>
+
+      <div id="cartFooter" style="display:none">
+        <hr class="cart-divider">
+        <div class="cart-summary-row">
+          <span>Subtotal</span>
+          <span id="subtotalDisplay">$0.00</span>
+        </div>
+        <div class="cart-summary-row">
+          <span>Dealer premium (2.5%)</span>
+          <span id="premiumDisplay">$0.00</span>
+        </div>
+        <div class="cart-summary-row">
+          <span>Shipping</span>
+          <span id="shippingDisplay">$25.00</span>
+        </div>
+        <div class="cart-total-row">
+          <span>Total</span>
+          <span id="totalDisplay">$0.00</span>
+        </div>
+        <button class="checkout-btn" onclick="openCheckout()">Proceed to Checkout →</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Checkout Modal -->
+  <div class="modal-overlay" id="checkoutModal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeCheckout()">✕</button>
+
+      <!-- Form screen -->
+      <div id="checkoutForm">
+        <h2>Secure Checkout</h2>
+        <p class="modal-subtitle">All transactions are encrypted and insured during transit.</p>
+
+        <div class="order-summary-box" id="modalOrderSummary"></div>
+
+        <div class="form-row">
+          <label>Full Name</label>
+          <input type="text" placeholder="Jane Smith" id="chkName">
+        </div>
+        <div class="form-row">
+          <label>Email Address</label>
+          <input type="email" placeholder="jane@example.com" id="chkEmail">
+        </div>
+        <div class="form-row">
+          <label>Delivery Address</label>
+          <input type="text" placeholder="123 Main St, City, Country" id="chkAddress">
+        </div>
+        <div class="form-two">
+          <div class="form-row">
+            <label>Card Number</label>
+            <input type="text" placeholder="•••• •••• •••• ••••" id="chkCard" maxlength="19" oninput="formatCard(this)">
+          </div>
+          <div class="form-row">
+            <label>Expiry</label>
+            <input type="text" placeholder="MM / YY" id="chkExpiry" maxlength="7" oninput="formatExpiry(this)">
+          </div>
+        </div>
+        <button style="width:100%;padding:0.8rem;" onclick="placeOrder()">Place Order</button>
+      </div>
+
+      <!-- Success screen -->
+      <div class="success-screen" id="successScreen">
+        <div class="success-icon">✓</div>
+        <h3>Order Confirmed!</h3>
+        <p>Thank you! Your gold is being processed and will ship within 2–3 business days.<br>A confirmation will be sent to your email.</p>
+        <button style="margin-top:1.25rem;" onclick="closeCheckout()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 FusionFX Gold Shop &nbsp;·&nbsp; <a href="metals.html">Check spot prices</a> &nbsp;·&nbsp; Demo — no real transactions processed</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
