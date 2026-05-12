@@ -494,7 +494,7 @@ function closeCheckout() {
   document.getElementById("checkoutModal").classList.remove("open");
 }
 
-function placeOrder() {
+async function placeOrder() {
   const name    = document.getElementById("chkName")?.value.trim();
   const email   = document.getElementById("chkEmail")?.value.trim();
   const address = document.getElementById("chkAddress")?.value.trim();
@@ -506,7 +506,33 @@ function placeOrder() {
     return;
   }
 
-  // Simulate order
+  const subtotal = cart.reduce((s, i) => s + (i.price || 0), 0);
+  const premium  = subtotal * 0.025;
+  const shipping = 25;
+  const total    = subtotal + premium + shipping;
+
+  // Save order to IndexedDB
+  try {
+    await saveOrder({
+      name,
+      email,
+      address,
+      cardLast4: card.replace(/\s/g,'').slice(-4),
+      status:    "confirmed",
+      items: cart.map(i => ({
+        name:   i.product.name,
+        weight: i.product.weight,
+        price:  i.price
+      })),
+      subtotal,
+      premium,
+      shipping,
+      total
+    });
+  } catch (e) {
+    console.warn("Could not save order to DB:", e);
+  }
+
   document.getElementById("checkoutForm").style.display = "none";
   document.getElementById("successScreen").classList.add("show");
 
