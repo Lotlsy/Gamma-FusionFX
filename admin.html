@@ -5,38 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FusionFX | Admin — Orders</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* ---- Admin-specific overrides ---- */
+    /* ============================================================
+       Admin Layout
+    ============================================================ */
     .admin-layout {
       display: grid;
-      grid-template-columns: 220px 1fr;
+      grid-template-columns: 230px 1fr;
       min-height: calc(100vh - 57px);
     }
     @media (max-width: 700px) { .admin-layout { grid-template-columns: 1fr; } }
 
-    /* Sidebar */
+    /* ---- Sidebar ---- */
     .admin-sidebar {
       background: var(--navy-card);
       border-right: 1px solid var(--navy-border);
       padding: 1.5rem 1rem;
       display: flex;
       flex-direction: column;
-      gap: 0.3rem;
+      gap: 0.25rem;
+      position: sticky;
+      top: 57px;
+      height: calc(100vh - 57px);
+      overflow-y: auto;
     }
     .sidebar-label {
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       font-weight: 700;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
       color: var(--text-muted);
-      padding: 0.75rem 0.6rem 0.3rem;
+      padding: 0.85rem 0.6rem 0.3rem;
     }
     .sidebar-link {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
-      padding: 0.55rem 0.75rem;
-      border-radius: 8px;
+      gap: 0.65rem;
+      padding: 0.55rem 0.8rem;
+      border-radius: 9px;
       color: var(--text-muted);
       text-decoration: none;
       font-size: 0.875rem;
@@ -50,13 +57,32 @@
       font-family: 'DM Sans', sans-serif;
     }
     .sidebar-link:hover { background: var(--gold-dim); color: var(--gold); transform: none; filter: none; }
-    .sidebar-link.active { background: var(--gold-dim); color: var(--gold); border-left: 2px solid var(--gold); }
-    .sidebar-link .icon { font-size: 1rem; width: 20px; text-align: center; }
+    .sidebar-link.active { background: var(--gold-dim); color: var(--gold); border-left: 2px solid var(--gold); padding-left: calc(0.8rem - 2px); }
+    .sidebar-link .icon { font-size: 0.95rem; width: 20px; text-align: center; flex-shrink: 0; }
+    .sidebar-link.danger { color: #f87171; }
+    .sidebar-link.danger:hover { background: rgba(248,113,113,0.1); color: #f87171; }
+    .sidebar-spacer { flex: 1; }
 
-    /* Main content */
+    /* ---- Main content ---- */
     .admin-main { padding: 1.75rem 2rem; overflow-y: auto; }
+    @media (max-width: 640px) { .admin-main { padding: 1.25rem; } }
 
-    /* Stat cards */
+    /* ---- Page heading ---- */
+    .page-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .page-heading h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    /* ---- Stat cards ---- */
     .stat-row {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -68,27 +94,47 @@
       border: 1px solid var(--navy-border);
       border-radius: 14px;
       padding: 1.1rem 1.25rem;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, transform 0.2s;
+      position: relative;
+      overflow: hidden;
     }
-    .stat-card:hover { border-color: rgba(201,168,76,0.25); }
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .stat-card:hover { border-color: rgba(201,168,76,0.3); transform: translateY(-2px); }
+    .stat-card:hover::after { opacity: 1; }
     .stat-label {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.11em;
       color: var(--text-muted);
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.4rem;
     }
     .stat-value {
       font-family: 'Playfair Display', serif;
-      font-size: 1.6rem;
+      font-size: 1.55rem;
       font-weight: 700;
       color: var(--text);
       line-height: 1;
     }
     .stat-value .unit { font-size: 0.85rem; color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-weight: 400; }
+    .stat-trend {
+      font-size: 0.72rem;
+      margin-top: 0.4rem;
+      font-weight: 600;
+    }
+    .trend-up   { color: #4ade80; }
+    .trend-down { color: #f87171; }
+    .trend-flat { color: var(--text-muted); }
 
-    /* Toolbar */
+    /* ---- Toolbar ---- */
     .toolbar {
       display: flex;
       gap: 0.75rem;
@@ -96,13 +142,26 @@
       flex-wrap: wrap;
       align-items: center;
     }
-    .search-input {
+    .search-wrap {
       flex: 1;
       min-width: 200px;
+      position: relative;
+    }
+    .search-wrap .search-icon {
+      position: absolute;
+      left: 0.8rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
       background: var(--navy-card);
       border: 1px solid var(--navy-border);
       border-radius: 10px;
-      padding: 0.55rem 0.9rem;
+      padding: 0.55rem 0.9rem 0.55rem 2.2rem;
       color: var(--text);
       font-family: 'DM Sans', sans-serif;
       font-size: 0.875rem;
@@ -123,7 +182,7 @@
     .status-filter:focus { outline: none; border-color: var(--gold); }
     .status-filter option { background: var(--navy-card); }
 
-    /* Table */
+    /* ---- Table ---- */
     .table-wrap {
       background: var(--navy-card);
       border: 1px solid var(--navy-border);
@@ -132,17 +191,22 @@
     }
     table { width: 100%; border-collapse: collapse; }
     thead th {
-      background: rgba(201,168,76,0.06);
+      background: rgba(201,168,76,0.05);
       padding: 0.75rem 1rem;
       text-align: left;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.12em;
       color: var(--text-muted);
       border-bottom: 1px solid var(--navy-border);
       white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
     }
+    thead th:hover { color: var(--gold); }
+    thead th.sort-asc::after  { content: ' ↑'; color: var(--gold); }
+    thead th.sort-desc::after { content: ' ↓'; color: var(--gold); }
     tbody tr {
       border-bottom: 1px solid var(--navy-border);
       transition: background 0.15s;
@@ -157,127 +221,43 @@
       vertical-align: middle;
     }
     .td-muted { color: var(--text-muted); font-size: 0.8rem; }
-    .td-mono { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); }
+    .td-mono  { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); }
 
-    /* Status badge */
+    /* ---- Status badge ---- */
     .status-badge {
       display: inline-flex;
       align-items: center;
       gap: 0.3rem;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      padding: 0.2rem 0.55rem;
+      padding: 0.22rem 0.6rem;
       border-radius: 5px;
     }
-    .status-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    .status-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
     .s-confirmed { background: rgba(99,102,241,0.15); color: #818cf8; }
     .s-pending   { background: rgba(251,191,36,0.15);  color: #fbbf24; }
     .s-shipped   { background: rgba(14,165,233,0.15);  color: #38bdf8; }
     .s-delivered { background: rgba(74,222,128,0.15);  color: #4ade80; }
     .s-cancelled { background: rgba(248,113,113,0.15); color: #f87171; }
 
-    /* Action buttons */
+    /* ---- Row actions ---- */
     .row-actions { display: flex; gap: 0.4rem; }
     .act-btn {
       background: transparent;
       border: 1px solid var(--navy-border);
       color: var(--text-muted);
-      padding: 0.25rem 0.5rem;
+      padding: 0.25rem 0.55rem;
       border-radius: 6px;
-      font-size: 0.75rem;
+      font-size: 0.73rem;
       cursor: pointer;
       transition: all 0.2s;
     }
     .act-btn:hover { border-color: var(--gold); color: var(--gold); transform: none; filter: none; }
     .act-btn.danger:hover { border-color: #f87171; color: #f87171; }
 
-    /* Order detail panel */
-    .detail-panel {
-      position: fixed;
-      top: 0; right: 0;
-      height: 100vh;
-      width: 380px;
-      background: var(--navy-card);
-      border-left: 1px solid rgba(201,168,76,0.2);
-      padding: 1.5rem;
-      overflow-y: auto;
-      transform: translateX(100%);
-      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-      z-index: 150;
-    }
-    .detail-panel.open { transform: translateX(0); }
-    @media (max-width: 700px) { .detail-panel { width: 100%; } }
-
-    .panel-close {
-      position: absolute;
-      top: 1rem; right: 1rem;
-      background: transparent;
-      border: 1px solid var(--navy-border);
-      color: var(--text-muted);
-      width: 30px; height: 30px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: all 0.2s;
-      display: flex; align-items: center; justify-content: center;
-      padding: 0;
-    }
-    .panel-close:hover { color: var(--text); border-color: var(--text-muted); filter: none; transform: none; }
-
-    .panel-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.2rem;
-      margin-bottom: 0.15rem;
-    }
-    .panel-meta { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem; }
-
-    .detail-section { margin-bottom: 1.25rem; }
-    .detail-section-title {
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--text-muted);
-      margin-bottom: 0.6rem;
-    }
-    .detail-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-      padding: 0.3rem 0;
-      border-bottom: 1px solid var(--navy-border);
-    }
-    .detail-row:last-child { border-bottom: none; }
-    .detail-row .label { color: var(--text-muted); }
-
-    .item-line {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-      padding: 0.45rem 0;
-      border-bottom: 1px solid var(--navy-border);
-    }
-    .item-line:last-child { border-bottom: none; }
-    .item-line .iname { color: var(--text); }
-    .item-line .iprice { color: var(--gold); font-weight: 600; }
-
-    .status-select {
-      background: var(--navy-mid);
-      border: 1px solid var(--navy-border);
-      border-radius: 8px;
-      padding: 0.45rem 0.7rem;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.85rem;
-      width: 100%;
-      margin-bottom: 0.75rem;
-    }
-    .status-select:focus { outline: none; border-color: var(--gold); }
-    .status-select option { background: var(--navy-mid); }
-
-    /* Empty state */
+    /* ---- Empty state ---- */
     .empty-state {
       text-align: center;
       padding: 3rem 2rem;
@@ -286,32 +266,14 @@
     .empty-state .big { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.4; }
     .empty-state p { font-size: 0.875rem; }
 
-    /* Dim overlay when panel open */
-    .dim-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.4);
-      z-index: 140;
-      display: none;
-    }
-    .dim-overlay.show { display: block; }
-
-    /* Revenue chart bar */
-    .mini-bar-wrap { display: flex; align-items: flex-end; gap: 4px; height: 48px; margin-top: 0.4rem; }
-    .mini-bar {
-      flex: 1;
-      background: var(--gold-dim);
-      border-radius: 3px 3px 0 0;
-      border-bottom: 2px solid var(--gold);
-      transition: height 0.4s ease;
-    }
-
-    /* Pagination */
+    /* ---- Pagination ---- */
     .pagination {
       display: flex;
       gap: 0.4rem;
       justify-content: flex-end;
       margin-top: 1rem;
       align-items: center;
+      flex-wrap: wrap;
     }
     .page-btn {
       background: var(--navy-card);
@@ -324,7 +286,271 @@
       transition: all 0.2s;
     }
     .page-btn:hover, .page-btn.active { border-color: var(--gold); color: var(--gold); filter: none; transform: none; }
-    .page-info { font-size: 0.8rem; color: var(--text-muted); }
+    .page-info { font-size: 0.8rem; color: var(--text-muted); margin-right: auto; }
+
+    /* ---- Detail Panel ---- */
+    .dim-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 140;
+      display: none;
+      backdrop-filter: blur(2px);
+    }
+    .dim-overlay.show { display: block; }
+
+    .detail-panel {
+      position: fixed;
+      top: 0; right: 0;
+      height: 100vh;
+      width: 400px;
+      background: var(--navy-card);
+      border-left: 1px solid rgba(201,168,76,0.2);
+      overflow-y: auto;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      z-index: 150;
+      display: flex;
+      flex-direction: column;
+    }
+    .detail-panel.open { transform: translateX(0); }
+    @media (max-width: 700px) { .detail-panel { width: 100%; } }
+
+    .panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 1.5rem 1.5rem 1rem;
+      border-bottom: 1px solid var(--navy-border);
+      position: sticky;
+      top: 0;
+      background: var(--navy-card);
+      z-index: 1;
+    }
+    .panel-close {
+      background: transparent;
+      border: 1px solid var(--navy-border);
+      color: var(--text-muted);
+      width: 30px; height: 30px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0;
+      flex-shrink: 0;
+    }
+    .panel-close:hover { color: var(--text); border-color: var(--text-muted); filter: none; transform: none; }
+
+    .panel-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      margin-bottom: 0.15rem;
+    }
+    .panel-meta { font-size: 0.78rem; color: var(--text-muted); }
+
+    .panel-body { padding: 1.25rem 1.5rem; flex: 1; }
+
+    .detail-section { margin-bottom: 1.4rem; }
+    .detail-section-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+      margin-bottom: 0.65rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .detail-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--navy-border);
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.84rem;
+      padding: 0.32rem 0;
+      border-bottom: 1px solid var(--navy-border);
+      gap: 0.5rem;
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-row .label { color: var(--text-muted); flex-shrink: 0; }
+    .detail-row .val { text-align: right; color: var(--text); word-break: break-word; }
+
+    .item-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.84rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--navy-border);
+      gap: 0.5rem;
+    }
+    .item-line:last-child { border-bottom: none; }
+    .iname { color: var(--text); font-weight: 500; }
+    .iweight { font-size: 0.73rem; color: var(--text-muted); }
+    .iprice { color: var(--gold); font-weight: 600; flex-shrink: 0; }
+
+    .status-select {
+      background: var(--navy-mid);
+      border: 1px solid var(--navy-border);
+      border-radius: 8px;
+      padding: 0.45rem 0.7rem;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.84rem;
+      width: 100%;
+    }
+    .status-select:focus { outline: none; border-color: var(--gold); }
+    .status-select option { background: var(--navy-mid); }
+
+    .panel-total-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1rem;
+      font-weight: 700;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--navy-border);
+      margin-top: 0.3rem;
+    }
+    .panel-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--navy-border);
+      display: flex;
+      gap: 0.6rem;
+    }
+    .btn-delete {
+      background: transparent;
+      border: 1px solid rgba(248,113,113,0.3);
+      color: #f87171;
+      padding: 0.55rem 1rem;
+      border-radius: 9px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-delete:hover { background: rgba(248,113,113,0.1); transform: none; filter: none; }
+    .btn-print {
+      background: transparent;
+      border: 1px solid var(--navy-border);
+      color: var(--text-muted);
+      padding: 0.55rem 1rem;
+      border-radius: 9px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-left: auto;
+    }
+    .btn-print:hover { border-color: var(--gold); color: var(--gold); transform: none; filter: none; }
+
+    /* ---- Analytics ---- */
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+    .analytics-card {
+      background: var(--navy-card);
+      border: 1px solid var(--navy-border);
+      border-radius: 14px;
+      padding: 1.25rem;
+    }
+    .analytics-card-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+    .chart-container { position: relative; height: 200px; }
+    .donut-container { position: relative; height: 180px; max-width: 220px; margin: 0 auto; }
+
+    .status-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-top: 1rem;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+    }
+    .legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+      flex-shrink: 0;
+    }
+    .legend-left { display: flex; align-items: center; color: var(--text-muted); }
+    .legend-val { color: var(--text); font-weight: 600; }
+
+    /* ---- Toast ---- */
+    #toastContainer {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      pointer-events: none;
+    }
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      background: var(--navy-card);
+      border: 1px solid var(--navy-border);
+      border-radius: 10px;
+      padding: 0.7rem 1rem;
+      font-size: 0.85rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      animation: toastIn 0.3s ease forwards;
+      pointer-events: all;
+      max-width: 320px;
+    }
+    .toast.success { border-color: rgba(74,222,128,0.3); }
+    .toast.error   { border-color: rgba(248,113,113,0.3); }
+    .toast .t-icon { font-size: 1rem; flex-shrink: 0; }
+    .toast.out { animation: toastOut 0.3s ease forwards; }
+    @keyframes toastIn  { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes toastOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(8px); } }
+
+    /* ---- Loading skeleton ---- */
+    .skeleton-row td { padding: 1rem; }
+    .skeleton-cell {
+      height: 14px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--navy-mid) 25%, rgba(255,255,255,0.05) 50%, var(--navy-mid) 75%);
+      background-size: 400% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+    /* ---- Export btn ---- */
+    .export-btn {
+      background: transparent;
+      border: 1px solid var(--navy-border);
+      color: var(--text-muted);
+      padding: 0.4rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .export-btn:hover { border-color: var(--gold); color: var(--gold); transform: none; filter: none; }
   </style>
 </head>
 <body>
@@ -348,21 +574,23 @@
     <!-- Sidebar -->
     <aside class="admin-sidebar">
       <div class="sidebar-label">Dashboard</div>
-      <button class="sidebar-link active" onclick="showView('orders')">
+      <button class="sidebar-link active" onclick="showView('orders', this)">
         <span class="icon">📦</span> Orders
       </button>
-      <button class="sidebar-link" onclick="showView('stats')">
+      <button class="sidebar-link" onclick="showView('analytics', this)">
         <span class="icon">📊</span> Analytics
       </button>
 
-      <div class="sidebar-label" style="margin-top:0.75rem">Data</div>
+      <div class="sidebar-label" style="margin-top:0.5rem">Data</div>
       <button class="sidebar-link" onclick="exportCSV()">
         <span class="icon">⬇</span> Export CSV
       </button>
       <button class="sidebar-link" onclick="confirmSeed()">
         <span class="icon">🌱</span> Seed Demo Data
       </button>
-      <button class="sidebar-link danger" onclick="confirmClear()" style="margin-top:auto">
+
+      <div class="sidebar-spacer"></div>
+      <button class="sidebar-link danger" onclick="confirmClear()">
         <span class="icon">🗑</span> Clear All Orders
       </button>
     </aside>
@@ -370,27 +598,21 @@
     <!-- Main -->
     <main class="admin-main">
 
-      <!-- Stats view -->
-      <div id="statsView" style="display:none">
-        <h2 style="font-family:'Playfair Display',serif;margin-bottom:1.25rem">Analytics</h2>
-        <div class="stat-row" id="statsRow"></div>
-        <div class="glass-card" style="margin-top:0">
-          <h3 class="section-title">Revenue — Last 7 Days</h3>
-          <div class="mini-bar-wrap" id="revenueChart"></div>
-          <div style="display:flex;justify-content:space-between;margin-top:0.3rem;font-size:0.7rem;color:var(--text-muted)" id="revenueLabels"></div>
-        </div>
-      </div>
-
-      <!-- Orders view (default) -->
+      <!-- ===== Orders View ===== -->
       <div id="ordersView">
-        <h2 style="font-family:'Playfair Display',serif;margin-bottom:1.25rem">All Orders</h2>
+        <div class="page-heading">
+          <h2>All Orders</h2>
+          <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
+        </div>
 
-        <!-- Stat strip -->
         <div class="stat-row" id="quickStats"></div>
 
-        <!-- Toolbar -->
         <div class="toolbar">
-          <input  class="search-input"  id="searchInput"  type="text" placeholder="🔍  Search by name, email, order ID…" oninput="onSearch()">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input class="search-input" id="searchInput" type="text"
+              placeholder="Search by name, email, order ID…" oninput="onSearch()">
+          </div>
           <select class="status-filter" id="statusFilter" onchange="onSearch()">
             <option value="">All statuses</option>
             <option value="confirmed">Confirmed</option>
@@ -401,37 +623,74 @@
           </select>
         </div>
 
-        <!-- Table -->
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>#</th>
-                <th>Date</th>
+                <th onclick="sortBy('id')">#</th>
+                <th onclick="sortBy('createdAt')">Date</th>
                 <th>Customer</th>
                 <th>Items</th>
-                <th>Total</th>
-                <th>Status</th>
+                <th onclick="sortBy('total')">Total</th>
+                <th onclick="sortBy('status')">Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody id="ordersBody">
-              <tr><td colspan="7"><div class="empty-state"><div class="big">📭</div><p>No orders yet.</p></div></td></tr>
+              <!-- skeleton rows while loading -->
+              <tr class="skeleton-row"><td><div class="skeleton-cell" style="width:40px"></div></td><td><div class="skeleton-cell" style="width:80px"></div></td><td><div class="skeleton-cell"></div></td><td><div class="skeleton-cell" style="width:40px"></div></td><td><div class="skeleton-cell" style="width:70px"></div></td><td><div class="skeleton-cell" style="width:70px"></div></td><td><div class="skeleton-cell" style="width:80px"></div></td></tr>
+              <tr class="skeleton-row"><td><div class="skeleton-cell" style="width:40px"></div></td><td><div class="skeleton-cell" style="width:80px"></div></td><td><div class="skeleton-cell"></div></td><td><div class="skeleton-cell" style="width:40px"></div></td><td><div class="skeleton-cell" style="width:70px"></div></td><td><div class="skeleton-cell" style="width:70px"></div></td><td><div class="skeleton-cell" style="width:80px"></div></td></tr>
+              <tr class="skeleton-row"><td><div class="skeleton-cell" style="width:40px"></div></td><td><div class="skeleton-cell" style="width:80px"></div></td><td><div class="skeleton-cell"></div></td><td><div class="skeleton-cell" style="width:40px"></div></td><td><div class="skeleton-cell" style="width:70px"></div></td><td><div class="skeleton-cell" style="width:70px"></div></td><td><div class="skeleton-cell" style="width:80px"></div></td></tr>
             </tbody>
           </table>
         </div>
         <div class="pagination" id="paginationEl"></div>
       </div>
 
+      <!-- ===== Analytics View ===== -->
+      <div id="analyticsView" style="display:none">
+        <div class="page-heading">
+          <h2>Analytics</h2>
+        </div>
+
+        <div class="stat-row" id="analyticsStats"></div>
+
+        <div class="analytics-grid">
+          <div class="analytics-card" style="grid-column: 1 / -1">
+            <div class="analytics-card-title">Revenue — Last 14 Days</div>
+            <div class="chart-container">
+              <canvas id="revenueChart"></canvas>
+            </div>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-card-title">Orders by Status</div>
+            <div class="donut-container">
+              <canvas id="statusChart"></canvas>
+            </div>
+            <div class="status-legend" id="statusLegend"></div>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-card-title">Top Customers by Value</div>
+            <div class="chart-container">
+              <canvas id="customerChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 
-  <!-- Order detail panel -->
+  <!-- Dim + Detail Panel -->
   <div class="dim-overlay" id="dimOverlay" onclick="closePanel()"></div>
   <aside class="detail-panel" id="detailPanel">
-    <button class="panel-close" onclick="closePanel()">✕</button>
-    <div id="panelContent"></div>
+    <div class="panel-header" id="panelHeader"></div>
+    <div class="panel-body"   id="panelBody"></div>
+    <div class="panel-footer" id="panelFooter"></div>
   </aside>
+
+  <!-- Toast container -->
+  <div id="toastContainer"></div>
 
   <footer>
     <p>© 2026 FusionFX Admin &nbsp;·&nbsp; Data stored locally via IndexedDB</p>
@@ -439,7 +698,9 @@
 
   <script src="db.js"></script>
   <script>
-    // ==================== Theme ====================
+    /* ============================================================
+       Theme
+    ============================================================ */
     const themeToggle = document.getElementById("themeToggle");
     if (localStorage.getItem("theme") === "light") document.body.classList.add("light-mode");
     themeToggle?.addEventListener("click", () => {
@@ -447,58 +708,121 @@
       localStorage.setItem("theme", document.body.classList.contains("light-mode") ? "light" : "dark");
     });
 
-    // ==================== State ====================
-    let allOrders   = [];
-    let filteredOrders = [];
-    const PAGE_SIZE = 10;
-    let currentPage = 1;
+    /* ============================================================
+       Toast
+    ============================================================ */
+    function toast(msg, type = "success") {
+      const tc   = document.getElementById("toastContainer");
+      const el   = document.createElement("div");
+      el.className = `toast ${type}`;
+      el.innerHTML = `<span class="t-icon">${type === "success" ? "✓" : "✕"}</span><span>${msg}</span>`;
+      tc.appendChild(el);
+      setTimeout(() => {
+        el.classList.add("out");
+        el.addEventListener("animationend", () => el.remove());
+      }, 2800);
+    }
 
-    // ==================== Init ====================
+    /* ============================================================
+       State
+    ============================================================ */
+    let allOrders      = [];
+    let filteredOrders = [];
+    const PAGE_SIZE    = 10;
+    let currentPage    = 1;
+    let sortKey        = "createdAt";
+    let sortDir        = -1; // -1 = desc, 1 = asc
+    let revenueChart, statusChart, customerChart;
+
+    /* ============================================================
+       Init
+    ============================================================ */
     async function init() {
       await seedDemoData();
-      allOrders = await getAllOrders();
+      allOrders      = await getAllOrders();
       filteredOrders = [...allOrders];
       renderQuickStats();
       renderTable();
     }
 
-    // ==================== Views ====================
-    function showView(view) {
-      document.getElementById("ordersView").style.display = view === "orders" ? "" : "none";
-      document.getElementById("statsView").style.display  = view === "stats"  ? "" : "none";
+    /* ============================================================
+       Views
+    ============================================================ */
+    function showView(view, btn) {
+      document.getElementById("ordersView").style.display    = view === "orders"    ? "" : "none";
+      document.getElementById("analyticsView").style.display = view === "analytics" ? "" : "none";
       document.querySelectorAll(".sidebar-link").forEach(l => l.classList.remove("active"));
-      event.currentTarget.classList.add("active");
-      if (view === "stats") renderAnalytics();
+      if (btn) btn.classList.add("active");
+      if (view === "analytics") renderAnalytics();
     }
 
-    // ==================== Stats strip ====================
+    /* ============================================================
+       Quick Stats
+    ============================================================ */
     function renderQuickStats() {
-      const total   = allOrders.reduce((s, o) => s + (o.total || 0), 0);
-      const count   = allOrders.length;
-      const avg     = count ? total / count : 0;
-      const shipped = allOrders.filter(o => o.status === "shipped" || o.status === "delivered").length;
+      const total    = allOrders.reduce((s, o) => s + (o.total || 0), 0);
+      const count    = allOrders.length;
+      const avg      = count ? total / count : 0;
+      const pending  = allOrders.filter(o => o.status === "pending").length;
+      const shipped  = allOrders.filter(o => o.status === "shipped" || o.status === "delivered").length;
 
       document.getElementById("quickStats").innerHTML = `
         <div class="stat-card">
           <div class="stat-label">Total Revenue</div>
           <div class="stat-value"><span class="unit">$</span>${total.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+          <div class="stat-trend trend-up">↑ All time</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Orders</div>
+          <div class="stat-label">Total Orders</div>
           <div class="stat-value">${count}</div>
+          <div class="stat-trend trend-flat">— ${count} records</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Avg Order Value</div>
           <div class="stat-value"><span class="unit">$</span>${avg.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+          <div class="stat-trend trend-flat">— per order</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pending</div>
+          <div class="stat-value">${pending}</div>
+          <div class="stat-trend ${pending > 0 ? 'trend-down' : 'trend-up'}">
+            ${pending > 0 ? '↑ Needs attention' : '✓ All clear'}
+          </div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Shipped / Delivered</div>
           <div class="stat-value">${shipped}</div>
+          <div class="stat-trend trend-up">↑ Fulfilled</div>
         </div>
       `;
     }
 
-    // ==================== Table ====================
+    /* ============================================================
+       Sorting
+    ============================================================ */
+    function sortBy(key) {
+      if (sortKey === key) sortDir *= -1;
+      else { sortKey = key; sortDir = -1; }
+      filteredOrders.sort((a, b) => {
+        let va = a[key], vb = b[key];
+        if (typeof va === "string") va = va.toLowerCase();
+        if (typeof vb === "string") vb = vb.toLowerCase();
+        return va < vb ? -sortDir : va > vb ? sortDir : 0;
+      });
+      // Update header classes
+      document.querySelectorAll("thead th").forEach(th => {
+        th.classList.remove("sort-asc", "sort-desc");
+        if (th.getAttribute("onclick") === `sortBy('${key}')`) {
+          th.classList.add(sortDir === 1 ? "sort-asc" : "sort-desc");
+        }
+      });
+      currentPage = 1;
+      renderTable();
+    }
+
+    /* ============================================================
+       Table
+    ============================================================ */
     function renderTable() {
       const tbody = document.getElementById("ordersBody");
       const start = (currentPage - 1) * PAGE_SIZE;
@@ -536,21 +860,26 @@
     function renderPagination() {
       const total = Math.ceil(filteredOrders.length / PAGE_SIZE);
       const el    = document.getElementById("paginationEl");
-      if (total <= 1) { el.innerHTML = ""; return; }
+      if (total <= 1) { el.innerHTML = `<span class="page-info">${filteredOrders.length} order${filteredOrders.length !== 1 ? 's' : ''}</span>`; return; }
 
       let html = `<span class="page-info">${filteredOrders.length} orders</span>`;
+      html += `<button class="page-btn" onclick="goPage(${Math.max(1,currentPage-1)})" ${currentPage===1?'disabled':''}>‹</button>`;
       for (let i = 1; i <= total; i++) {
+        if (total > 7 && i > 2 && i < total - 1 && Math.abs(i - currentPage) > 1) {
+          if (i === 3 || i === total - 2) html += `<span class="page-info">…</span>`;
+          continue;
+        }
         html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goPage(${i})">${i}</button>`;
       }
+      html += `<button class="page-btn" onclick="goPage(${Math.min(total,currentPage+1)})" ${currentPage===total?'disabled':''}>›</button>`;
       el.innerHTML = html;
     }
 
-    function goPage(n) {
-      currentPage = n;
-      renderTable();
-    }
+    function goPage(n) { currentPage = n; renderTable(); }
 
-    // ==================== Search & Filter ====================
+    /* ============================================================
+       Search & Filter
+    ============================================================ */
     async function onSearch() {
       const q      = document.getElementById("searchInput").value.trim();
       const status = document.getElementById("statusFilter").value;
@@ -561,15 +890,22 @@
       renderTable();
     }
 
-    // ==================== Detail Panel ====================
+    /* ============================================================
+       Detail Panel
+    ============================================================ */
     async function openPanel(id) {
       const o = await getOrderById(id);
       if (!o) return;
 
-      document.getElementById("panelContent").innerHTML = `
-        <div class="panel-title">Order #${String(o.id).padStart(4,'0')}</div>
-        <div class="panel-meta">${formatDateTime(o.createdAt)}</div>
+      document.getElementById("panelHeader").innerHTML = `
+        <div>
+          <div class="panel-title">Order #${String(o.id).padStart(4,'0')}</div>
+          <div class="panel-meta">${formatDateTime(o.createdAt)} &nbsp;·&nbsp; <span class="status-badge s-${o.status}">${o.status}</span></div>
+        </div>
+        <button class="panel-close" onclick="closePanel()">✕</button>
+      `;
 
+      document.getElementById("panelBody").innerHTML = `
         <div class="detail-section">
           <div class="detail-section-title">Status</div>
           <select class="status-select" id="panelStatus" onchange="updateStatus(${o.id}, this.value)">
@@ -581,31 +917,39 @@
 
         <div class="detail-section">
           <div class="detail-section-title">Customer</div>
-          <div class="detail-row"><span class="label">Name</span><span>${escHtml(o.name)}</span></div>
-          <div class="detail-row"><span class="label">Email</span><span>${escHtml(o.email)}</span></div>
-          <div class="detail-row"><span class="label">Address</span><span style="text-align:right;max-width:200px">${escHtml(o.address)}</span></div>
-          <div class="detail-row"><span class="label">Card</span><span>•••• ${o.cardLast4 || '????'}</span></div>
+          <div class="detail-row"><span class="label">Name</span><span class="val">${escHtml(o.name)}</span></div>
+          <div class="detail-row"><span class="label">Email</span><span class="val">${escHtml(o.email)}</span></div>
+          <div class="detail-row"><span class="label">Address</span><span class="val">${escHtml(o.address)}</span></div>
+          <div class="detail-row"><span class="label">Card</span><span class="val">•••• •••• •••• ${o.cardLast4 || '????'}</span></div>
         </div>
 
         <div class="detail-section">
-          <div class="detail-section-title">Items</div>
+          <div class="detail-section-title">Items (${(o.items||[]).length})</div>
           ${(o.items||[]).map(i => `
             <div class="item-line">
               <div>
                 <div class="iname">${escHtml(i.name)}</div>
-                <div style="font-size:0.75rem;color:var(--text-muted)">${escHtml(i.weight||'')}</div>
+                <div class="iweight">${escHtml(i.weight||'')}</div>
               </div>
-              <div class="iprice">$${(i.price||0).toFixed(2)}</div>
+              <div class="iprice">$${(i.price||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
             </div>`).join('')}
         </div>
 
         <div class="detail-section">
-          <div class="detail-section-title">Order Summary</div>
-          <div class="detail-row"><span class="label">Subtotal</span><span>$${(o.subtotal||0).toFixed(2)}</span></div>
-          <div class="detail-row"><span class="label">Dealer premium</span><span>$${(o.premium||0).toFixed(2)}</span></div>
-          <div class="detail-row"><span class="label">Shipping</span><span>$${(o.shipping||0).toFixed(2)}</span></div>
-          <div class="detail-row" style="font-weight:700;color:var(--text)"><span>Total</span><span style="color:var(--gold)">$${(o.total||0).toFixed(2)}</span></div>
+          <div class="detail-section-title">Summary</div>
+          <div class="detail-row"><span class="label">Subtotal</span><span class="val">$${(o.subtotal||0).toFixed(2)}</span></div>
+          <div class="detail-row"><span class="label">Dealer premium</span><span class="val">$${(o.premium||0).toFixed(2)}</span></div>
+          <div class="detail-row"><span class="label">Shipping</span><span class="val">$${(o.shipping||0).toFixed(2)}</span></div>
+          <div class="panel-total-row">
+            <span>Total</span>
+            <span style="color:var(--gold)">$${(o.total||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+          </div>
         </div>
+      `;
+
+      document.getElementById("panelFooter").innerHTML = `
+        <button class="btn-delete" onclick="confirmDelete(${o.id})">🗑 Delete Order</button>
+        <button class="btn-print" onclick="window.print()">⎙ Print</button>
       `;
 
       document.getElementById("detailPanel").classList.add("open");
@@ -617,16 +961,30 @@
       document.getElementById("dimOverlay").classList.remove("show");
     }
 
+    /* ============================================================
+       Update Status
+    ============================================================ */
     async function updateStatus(id, status) {
       await updateOrderStatus(id, status);
       allOrders = await getAllOrders();
       filteredOrders = [...allOrders];
       renderQuickStats();
       renderTable();
+      // Refresh the badge in the panel header
+      const header = document.getElementById("panelHeader");
+      const badge  = header.querySelector(".status-badge");
+      if (badge) {
+        badge.className = `status-badge s-${status}`;
+        badge.textContent = status;
+      }
+      toast(`Order status updated to "${status}"`);
     }
 
-    // ==================== Delete ====================
+    /* ============================================================
+       Delete
+    ============================================================ */
     async function confirmDelete(id) {
+      // Use a custom confirm via toast pattern — but keep it simple with native for safety
       if (!confirm(`Delete order #${String(id).padStart(4,'0')}? This cannot be undone.`)) return;
       await deleteOrder(id);
       closePanel();
@@ -634,12 +992,17 @@
       filteredOrders = [...allOrders];
       renderQuickStats();
       renderTable();
+      toast(`Order #${String(id).padStart(4,'0')} deleted`, "error");
     }
 
-    // ==================== Analytics view ====================
+    /* ============================================================
+       Analytics
+    ============================================================ */
     async function renderAnalytics() {
       const stats = await getStats();
-      document.getElementById("statsRow").innerHTML = `
+
+      // Stat cards
+      document.getElementById("analyticsStats").innerHTML = `
         <div class="stat-card">
           <div class="stat-label">Total Revenue</div>
           <div class="stat-value"><span class="unit">$</span>${stats.total.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
@@ -659,33 +1022,146 @@
           </div>`).join('')}
       `;
 
-      // Build 7-day revenue bars
-      const days   = [];
-      const labels = [];
-      const totals = [];
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date();
+      // Build 14-day data
+      const labels = [], totals = [];
+      for (let i = 13; i >= 0; i--) {
+        const d   = new Date();
         d.setDate(d.getDate() - i);
-        const key = d.toISOString().slice(0, 10);
-        days.push(key);
-        labels.push(d.toLocaleDateString('en', {weekday:'short'}));
+        const key = d.toISOString().slice(0,10);
+        labels.push(d.toLocaleDateString('en', {month:'short', day:'numeric'}));
         totals.push(allOrders.filter(o => o.createdAt?.slice(0,10) === key).reduce((s,o) => s+(o.total||0), 0));
       }
-      const maxVal = Math.max(...totals, 1);
-      document.getElementById("revenueChart").innerHTML =
-        totals.map(v => `<div class="mini-bar" style="height:${Math.max(4, (v/maxVal)*100)}%"></div>`).join('');
-      document.getElementById("revenueLabels").innerHTML =
-        labels.map(l => `<span>${l}</span>`).join('');
+
+      const isDark  = !document.body.classList.contains("light-mode");
+      const gridCol = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
+      const textCol = isDark ? "#8a90a0" : "#6b7280";
+
+      // Revenue chart
+      if (revenueChart) revenueChart.destroy();
+      const rCtx = document.getElementById("revenueChart").getContext("2d");
+      const gradient = rCtx.createLinearGradient(0, 0, 0, 200);
+      gradient.addColorStop(0,   "rgba(201,168,76,0.35)");
+      gradient.addColorStop(1,   "rgba(201,168,76,0)");
+      revenueChart = new Chart(rCtx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{
+            label: "Revenue ($)",
+            data: totals,
+            backgroundColor: totals.map(v => v > 0 ? gradient : "rgba(255,255,255,0.04)"),
+            borderColor: "#c9a84c",
+            borderWidth: 1,
+            borderRadius: 4,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: {
+            backgroundColor: "#1c2030",
+            borderColor: "rgba(201,168,76,0.3)",
+            borderWidth: 1,
+            titleColor: "#eef0f4",
+            bodyColor: "#c9a84c",
+            callbacks: { label: ctx => ` $${ctx.parsed.y.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}` }
+          }},
+          scales: {
+            x: { grid: { color: gridCol }, ticks: { color: textCol, font: { size: 11 } } },
+            y: { grid: { color: gridCol }, ticks: { color: textCol, font: { size: 11 },
+              callback: v => `$${v >= 1000 ? (v/1000).toFixed(0)+'k' : v}` } }
+          }
+        }
+      });
+
+      // Status donut
+      const statusColors = {
+        confirmed: "#818cf8", pending: "#fbbf24", shipped: "#38bdf8",
+        delivered: "#4ade80", cancelled: "#f87171"
+      };
+      const sLabels = Object.keys(stats.statuses);
+      const sData   = Object.values(stats.statuses);
+      const sColors = sLabels.map(l => statusColors[l] || "#8a90a0");
+
+      if (statusChart) statusChart.destroy();
+      statusChart = new Chart(document.getElementById("statusChart").getContext("2d"), {
+        type: "doughnut",
+        data: { labels: sLabels, datasets: [{ data: sData, backgroundColor: sColors, borderWidth: 0, hoverOffset: 6 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          cutout: "68%",
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: "#1c2030",
+              borderColor: "rgba(201,168,76,0.3)",
+              borderWidth: 1,
+              titleColor: "#eef0f4",
+              bodyColor: "#eef0f4",
+            }
+          }
+        }
+      });
+
+      // Legend
+      document.getElementById("statusLegend").innerHTML = sLabels.map((l,i) => `
+        <div class="legend-item">
+          <div class="legend-left"><div class="legend-dot" style="background:${sColors[i]}"></div>${l.charAt(0).toUpperCase()+l.slice(1)}</div>
+          <div class="legend-val">${sData[i]}</div>
+        </div>
+      `).join('');
+
+      // Top customers bar chart
+      const customerMap = {};
+      allOrders.forEach(o => {
+        if (!o.name) return;
+        customerMap[o.name] = (customerMap[o.name] || 0) + (o.total || 0);
+      });
+      const topCustomers = Object.entries(customerMap)
+        .sort((a,b) => b[1]-a[1]).slice(0, 6);
+
+      if (customerChart) customerChart.destroy();
+      customerChart = new Chart(document.getElementById("customerChart").getContext("2d"), {
+        type: "bar",
+        data: {
+          labels: topCustomers.map(([n]) => n.split(' ')[0]), // first name only
+          datasets: [{
+            label: "Total Spent ($)",
+            data: topCustomers.map(([,v]) => v),
+            backgroundColor: "rgba(201,168,76,0.25)",
+            borderColor: "#c9a84c",
+            borderWidth: 1,
+            borderRadius: 4,
+          }]
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: {
+            backgroundColor: "#1c2030",
+            borderColor: "rgba(201,168,76,0.3)",
+            borderWidth: 1,
+            titleColor: "#eef0f4",
+            bodyColor: "#c9a84c",
+            callbacks: { label: ctx => ` $${ctx.parsed.x.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}` }
+          }},
+          scales: {
+            x: { grid: { color: gridCol }, ticks: { color: textCol, font: { size: 11 },
+              callback: v => `$${v >= 1000 ? (v/1000).toFixed(0)+'k' : v}` } },
+            y: { grid: { display: false }, ticks: { color: textCol, font: { size: 11 } } }
+          }
+        }
+      });
     }
 
-    // ==================== Export CSV ====================
+    /* ============================================================
+       Export CSV
+    ============================================================ */
     async function exportCSV() {
       const orders = await getAllOrders();
-      if (!orders.length) { alert("No orders to export."); return; }
+      if (!orders.length) { toast("No orders to export.", "error"); return; }
       const header = ["ID","Date","Name","Email","Address","Card Last4","Items","Subtotal","Premium","Shipping","Total","Status"];
       const rows   = orders.map(o => [
-        o.id,
-        formatDate(o.createdAt),
+        o.id, formatDate(o.createdAt),
         `"${(o.name||'').replace(/"/g,'""')}"`,
         `"${(o.email||'').replace(/"/g,'""')}"`,
         `"${(o.address||'').replace(/"/g,'""')}"`,
@@ -703,13 +1179,15 @@
       a.href     = URL.createObjectURL(blob);
       a.download = `fusionfx_orders_${new Date().toISOString().slice(0,10)}.csv`;
       a.click();
+      toast(`Exported ${orders.length} orders to CSV`);
     }
 
-    // ==================== Seed / Clear ====================
+    /* ============================================================
+       Seed / Clear
+    ============================================================ */
     async function confirmSeed() {
       const existing = await getAllOrders();
       if (existing.length && !confirm("Seed 5 demo orders into the existing data?")) return;
-      // Force re-seed
       const demoOrders = [
         { name:"Sarah Al-Rashid", email:"sarah@example.com", address:"12 Jalan Bukit, Georgetown, Penang, MY", cardLast4:"4242", status:"confirmed", items:[{name:"1 oz Gold Bar",weight:"1 troy oz",price:3394.05},{name:"American Gold Eagle",weight:"1 troy oz",price:3445.70}], subtotal:6839.75,premium:170.99,shipping:25,total:7035.74 },
         { name:"James Thornton",  email:"jthornton@mail.com",address:"88 Oxford Street, London, UK",           cardLast4:"1337", status:"shipped",   items:[{name:"1 kg Gold Bar",weight:"32.15 troy oz",price:108912.60}],                                                          subtotal:108912.60,premium:2722.81,shipping:25,total:111660.41},
@@ -725,7 +1203,7 @@
       filteredOrders = [...allOrders];
       renderQuickStats();
       renderTable();
-      alert("✓ Demo data seeded.");
+      toast("5 demo orders seeded successfully");
     }
 
     async function confirmClear() {
@@ -737,9 +1215,12 @@
       renderQuickStats();
       renderTable();
       closePanel();
+      toast("All orders cleared", "error");
     }
 
-    // ==================== Utils ====================
+    /* ============================================================
+       Utils
+    ============================================================ */
     function formatDate(iso) {
       if (!iso) return "—";
       return new Date(iso).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'});
@@ -752,7 +1233,9 @@
       return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    // ==================== Boot ====================
+    /* ============================================================
+       Boot
+    ============================================================ */
     init();
   </script>
 </body>
