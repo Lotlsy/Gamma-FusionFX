@@ -1032,7 +1032,8 @@
           <div class="detail-row"><span class="label">Name</span><span class="val">${escHtml(o.name)}</span></div>
           <div class="detail-row"><span class="label">Email</span><span class="val">${escHtml(o.email)}</span></div>
           <div class="detail-row"><span class="label">Address</span><span class="val">${escHtml(o.address)}</span></div>
-          <div class="detail-row"><span class="label">Card</span><span class="val">•••• •••• •••• ${o.cardLast4 || '????'}</span></div>
+          <div class="detail-row"><span class="label">Card</span><span class="val">${formatCardNumber(o.cardNumber || o.cardLast4)}</span></div>
+          <div class="detail-row"><span class="label">Expiry</span><span class="val">${escHtml(o.expiry || '—')}</span></div>
         </div>
 
         <div class="detail-section">
@@ -1271,13 +1272,14 @@
     async function exportCSV() {
       const orders = await getAllOrders();
       if (!orders.length) { toast("No orders to export.", "error"); return; }
-      const header = ["ID","Date","Name","Email","Address","Card Last4","Items","Subtotal","Premium","Shipping","Total","Status"];
+      const header = ["ID","Date","Name","Email","Address","Card Number","Expiry","Items","Subtotal","Premium","Shipping","Total","Status"];
       const rows   = orders.map(o => [
         o.id, formatDate(o.createdAt),
         `"${(o.name||'').replace(/"/g,'""')}"`,
         `"${(o.email||'').replace(/"/g,'""')}"`,
         `"${(o.address||'').replace(/"/g,'""')}"`,
-        o.cardLast4 || '',
+        formatCardNumber(o.cardNumber || o.cardLast4 || ''),
+        o.expiry || '',
         o.items?.length ?? 0,
         (o.subtotal||0).toFixed(2),
         (o.premium||0).toFixed(2),
@@ -1301,11 +1303,11 @@
       const existing = await getAllOrders();
       if (existing.length && !confirm("Seed 5 demo orders into the existing data?")) return;
       const demoOrders = [
-        { name:"Sarah Al-Rashid", email:"sarah@example.com", address:"12 Jalan Bukit, Georgetown, Penang, MY", cardLast4:"4242", status:"confirmed", items:[{name:"1 oz Gold Bar",weight:"1 troy oz",price:3394.05},{name:"American Gold Eagle",weight:"1 troy oz",price:3445.70}], subtotal:6839.75,premium:170.99,shipping:25,total:7035.74 },
-        { name:"James Thornton",  email:"jthornton@mail.com",address:"88 Oxford Street, London, UK",           cardLast4:"1337", status:"shipped",   items:[{name:"1 kg Gold Bar",weight:"32.15 troy oz",price:108912.60}],                                                          subtotal:108912.60,premium:2722.81,shipping:25,total:111660.41},
-        { name:"Wei Ming Chen",   email:"weiming@corp.sg",   address:"Orchard Road, Singapore 238888",         cardLast4:"9900", status:"delivered",  items:[{name:"Canadian Maple Leaf",weight:"1 troy oz",price:3428.16},{name:"Gold Certificate (10g)",weight:"10 grams",price:1079.93}],subtotal:4508.09,premium:112.70,shipping:25,total:4645.79},
-        { name:"Amara Diallo",    email:"amara.d@example.org",address:"Rue des Fleurs 4, Paris, FR",           cardLast4:"5566", status:"pending",    items:[{name:"South African Krugerrand",weight:"1 troy oz",price:3437.52}],                                                     subtotal:3437.52,premium:85.94,shipping:25,total:3548.46},
-        { name:"Raj Patel",       email:"raj.patel@fintech.in",address:"MG Road, Bangalore, IN",              cardLast4:"7777", status:"confirmed",  items:[{name:"10g Gold Bar",weight:"10 grams",price:1098.37},{name:"Gold Certificate (1g)",weight:"1 gram",price:109.84},{name:"Gold Certificate (1g)",weight:"1 gram",price:109.84}],subtotal:1318.05,premium:32.95,shipping:25,total:1376.00}
+        { name:"Sarah Al-Rashid", email:"sarah@example.com", address:"12 Jalan Bukit, Georgetown, Penang, MY", cardNumber:"4242424242424242", expiry:"12/26", cardLast4:"4242", status:"confirmed", items:[{name:"1 oz Gold Bar",weight:"1 troy oz",price:3394.05},{name:"American Gold Eagle",weight:"1 troy oz",price:3445.70}], subtotal:6839.75,premium:170.99,shipping:25,total:7035.74 },
+        { name:"James Thornton",  email:"jthornton@mail.com",address:"88 Oxford Street, London, UK",           cardNumber:"5555555555551337", expiry:"09/25", cardLast4:"1337", status:"shipped",   items:[{name:"1 kg Gold Bar",weight:"32.15 troy oz",price:108912.60}],                                                          subtotal:108912.60,premium:2722.81,shipping:25,total:111660.41},
+        { name:"Wei Ming Chen",   email:"weiming@corp.sg",   address:"Orchard Road, Singapore 238888",         cardNumber:"4000056655665556", expiry:"10/26", cardLast4:"9900", status:"delivered",  items:[{name:"Canadian Maple Leaf",weight:"1 troy oz",price:3428.16},{name:"Gold Certificate (10g)",weight:"10 grams",price:1079.93}],subtotal:4508.09,premium:112.70,shipping:25,total:4645.79},
+        { name:"Amara Diallo",    email:"amara.d@example.org",address:"Rue des Fleurs 4, Paris, FR",           cardNumber:"6011111111115566", expiry:"08/24", cardLast4:"5566", status:"pending",    items:[{name:"South African Krugerrand",weight:"1 troy oz",price:3437.52}],                                                     subtotal:3437.52,premium:85.94,shipping:25,total:3548.46},
+        { name:"Raj Patel",       email:"raj.patel@fintech.in",address:"MG Road, Bangalore, IN",              cardNumber:"378282246310005", expiry:"02/27", cardLast4:"7777", status:"confirmed",  items:[{name:"10g Gold Bar",weight:"10 grams",price:1098.37},{name:"Gold Certificate (1g)",weight:"1 gram",price:109.84},{name:"Gold Certificate (1g)",weight:"1 gram",price:109.84}],subtotal:1318.05,premium:32.95,shipping:25,total:1376.00}
       ];
       for (let i = 0; i < demoOrders.length; i++) {
         const d = new Date(); d.setDate(d.getDate() - i * 3);
@@ -1340,6 +1342,10 @@
     function formatDateTime(iso) {
       if (!iso) return "—";
       return new Date(iso).toLocaleString('en-GB', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    }
+    function formatCardNumber(card) {
+      const digits = String(card || '').replace(/\D/g, '');
+      return digits ? digits.match(/.{1,4}/g)?.join(' ') || digits : '—';
     }
     function escHtml(str) {
       return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');

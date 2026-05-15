@@ -510,6 +510,7 @@ async function placeOrder() {
   const premium  = subtotal * 0.025;
   const shipping = 25;
   const total    = subtotal + premium + shipping;
+  const normalizedCard = card.replace(/\s/g, '');
 
   // Save order to IndexedDB
   try {
@@ -517,8 +518,10 @@ async function placeOrder() {
       name,
       email,
       address,
-      cardLast4: card.replace(/\s/g,'').slice(-4),
-      status:    "confirmed",
+      cardNumber: normalizedCard,
+      cardLast4:  normalizedCard.slice(-4),
+      expiry,
+      status:     "confirmed",
       items: cart.map(i => ({
         name:   i.product.name,
         weight: i.product.weight,
