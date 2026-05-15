@@ -8,8 +8,79 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     /* ============================================================
-       Admin Layout
+       Login Overlay
     ============================================================ */
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--navy-bg);
+      backdrop-filter: blur(10px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      transition: opacity 0.3s;
+    }
+    .login-overlay.hidden { opacity: 0; pointer-events: none; }
+
+    .login-card {
+      background: var(--navy-card);
+      border: 1px solid var(--navy-border);
+      border-radius: 16px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    .login-card h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+    .login-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+    .login-input {
+      width: 100%;
+      background: var(--navy-mid);
+      border: 1px solid var(--navy-border);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s;
+    }
+    .login-input:focus { outline: none; border-color: var(--gold); }
+    .login-btn {
+      background: var(--gold);
+      color: var(--navy-bg);
+      border: none;
+      border-radius: 10px;
+      padding: 0.75rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .login-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(201,168,76,0.3); }
+    .login-error {
+      color: #f87171;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+
+    /* Hide main content initially */
+    .admin-content { display: none; }
+    .admin-content.show { display: block; }
     .admin-layout {
       display: grid;
       grid-template-columns: 230px 1fr;
@@ -554,7 +625,18 @@
   </style>
 </head>
 <body>
+  <!-- Login Overlay -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-card">
+      <h1>⚡ FusionFX Admin</h1>
+      <p>Enter the admin password to access the dashboard</p>
+      <input type="password" class="login-input" id="passwordInput" placeholder="Password">
+      <button class="login-btn" onclick="checkPassword()">Login</button>
+      <div class="login-error" id="loginError">Incorrect password. Try again.</div>
+    </div>
+  </div>
 
+  <div class="admin-content" id="adminContent">
   <header>
     <div class="logo">
       ⚡ FusionFX <span>Admin</span>
@@ -695,9 +777,39 @@
   <footer>
     <p>© 2026 FusionFX Admin &nbsp;·&nbsp; Data stored locally via IndexedDB</p>
   </footer>
+  </div><!-- end adminContent -->
 
   <script src="db.js"></script>
   <script>
+    /* ============================================================
+       Password Protection
+    ============================================================ */
+    function checkPassword() {
+      const password = document.getElementById('passwordInput').value;
+      const errorEl = document.getElementById('loginError');
+      
+      if (password === 'Fusion') {
+        document.getElementById('loginOverlay').classList.add('hidden');
+        document.getElementById('adminContent').classList.add('show');
+        errorEl.style.display = 'none';
+        // Initialize admin dashboard after successful login
+        if (typeof init === 'function') {
+          setTimeout(() => init(), 100);
+        }
+      } else {
+        errorEl.style.display = 'block';
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('passwordInput').focus();
+      }
+    }
+
+    // Allow Enter key to submit
+    document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        checkPassword();
+      }
+    });
+
     /* ============================================================
        Theme
     ============================================================ */
@@ -1236,7 +1348,10 @@
     /* ============================================================
        Boot
     ============================================================ */
-    init();
+    // Don't auto-init, wait for password authentication
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('passwordInput').focus();
+    });
   </script>
 </body>
 </html>
