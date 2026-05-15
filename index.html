@@ -3,8 +3,270 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Real-time currency converter with live exchange rates. Convert between 20+ currencies instantly.">
   <title>FusionFX | Currency Converter</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Luxury Enhancements - Refined */
+    body {
+      background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+      color: #f5f5f5;
+      font-family: 'Playfair Display', serif;
+      overflow-x: hidden;
+    }
+
+    header {
+      background: rgba(10,10,15,0.95);
+      backdrop-filter: blur(15px);
+      border-bottom: 1px solid rgba(212,175,55,0.5);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+      position: relative;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #D4AF37;
+      text-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
+    }
+
+    nav a {
+      color: #e0e0e0;
+      transition: color 0.3s ease;
+      position: relative;
+    }
+    nav a:hover, nav a.active {
+      color: #D4AF37;
+    }
+    nav a::after {
+      content: '';
+      position: absolute;
+      bottom: -5px; left: 50%; width: 0; height: 1px;
+      background: #D4AF37;
+      transition: width 0.3s ease;
+      transform: translateX(-50%);
+    }
+    nav a:hover::after, nav a.active::after {
+      width: 100%;
+    }
+
+    .theme-btn {
+      background: rgba(212,175,55,0.1);
+      color: #D4AF37;
+      border: 1px solid rgba(212,175,55,0.3);
+      padding: 0.5rem 1rem;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .theme-btn:hover {
+      background: rgba(212,175,55,0.2);
+      border-color: #D4AF37;
+    }
+
+    .ticker {
+      background: rgba(10,10,15,0.8);
+      border-top: 1px solid rgba(212,175,55,0.2);
+      border-bottom: 1px solid rgba(212,175,55,0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    .ticker-inner {
+      animation: scroll 40s linear infinite;
+    }
+    @keyframes scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .ticker-item {
+      color: #c0c0c0;
+      font-weight: 500;
+    }
+    .up { color: #4ade80; }
+    .down { color: #f87171; }
+
+    .page-hero {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: linear-gradient(to bottom, rgba(212,175,55,0.05) 0%, transparent 100%);
+    }
+    .page-hero h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      color: #D4AF37;
+      margin-bottom: 1rem;
+    }
+    .page-hero p {
+      font-size: 1.1rem;
+      color: #b0b0b0;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .glass-card {
+      background: rgba(255,255,255,0.02);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(212,175,55,0.1);
+      border-radius: 15px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+    }
+    .glass-card:hover {
+      border-color: rgba(212,175,55,0.3);
+      box-shadow: 0 6px 25px rgba(0,0,0,0.4);
+    }
+
+    .section-title {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #D4AF37;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    .badge {
+      background: rgba(212,175,55,0.1);
+      color: #D4AF37;
+      padding: 0.2rem 0.6rem;
+      border-radius: 15px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 0.5rem;
+      border: 1px solid rgba(212,175,55,0.2);
+    }
+
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    select, input[type="number"] {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(212,175,55,0.2);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      color: #f5f5f5;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+      min-width: 120px;
+    }
+    select:focus, input[type="number"]:focus {
+      outline: none;
+      border-color: #D4AF37;
+    }
+    select option {
+      background: #1a1a2e;
+      color: #f5f5f5;
+    }
+
+    #swapBtn {
+      background: rgba(212,175,55,0.1);
+      color: #D4AF37;
+      border: 1px solid rgba(212,175,55,0.3);
+      padding: 0.75rem 1rem;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1.1rem;
+    }
+    #swapBtn:hover {
+      background: rgba(212,175,55,0.2);
+      border-color: #D4AF37;
+      transform: rotate(180deg);
+    }
+
+    button[onclick="convertCurrency()"] {
+      background: linear-gradient(135deg, #D4AF37, #B8860B);
+      color: #000;
+      border: none;
+      padding: 0.9rem 2rem;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      margin: 0 auto;
+      display: block;
+      box-shadow: 0 2px 10px rgba(212,175,55,0.3);
+    }
+    button[onclick="convertCurrency()"]:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(212,175,55,0.4);
+    }
+
+    .result-box {
+      text-align: center;
+      font-size: 1.1rem;
+      color: #e0e0e0;
+      margin-top: 1rem;
+    }
+    #currencyResult {
+      color: #D4AF37;
+      font-weight: 700;
+      font-size: 1.4rem;
+    }
+
+    canvas {
+      max-width: 100%;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(212,175,55,0.1);
+    }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      background: rgba(10,10,15,0.9);
+      border-top: 1px solid rgba(212,175,55,0.2);
+      color: #a0a0a0;
+    }
+    footer a {
+      color: #D4AF37;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    footer a:hover {
+      color: #F0E68C;
+    }
+
+    #hiddenLogin {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(212,175,55,0.1);
+      color: #D4AF37;
+      border: 1px solid rgba(212,175,55,0.3);
+      padding: 0.6rem 1.2rem;
+      border-radius: 20px;
+      cursor: pointer;
+      opacity: 0;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    #hiddenLogin:hover {
+      opacity: 1;
+      background: rgba(212,175,55,0.2);
+      border-color: #D4AF37;
+    }
+
+    @media (max-width: 768px) {
+      .page-hero h1 { font-size: 2.2rem; }
+      .input-group { flex-direction: column; }
+      select, input[type="number"] { min-width: 100%; }
+    }
+  </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -65,6 +327,7 @@
           <option value="ZAR">🇿🇦 ZAR</option><option value="MXN">🇲🇽 MXN</option>
         </select>
         <input type="number" id="currencyAmount" value="1" min="0" step="any">
+        <button onclick="swapCurrencies()" id="swapBtn" style="background: var(--gold); color: white; border: none; padding: 0.5rem; border-radius: 5px; cursor: pointer; margin: 0 0.5rem;">⇅</button>
         <select id="toCurrency">
           <option value="EUR" selected>🇪🇺 EUR</option><option value="USD">🇺🇸 USD</option><option value="GBP">🇬🇧 GBP</option>
           <option value="JPY">🇯🇵 JPY</option><option value="AUD">🇦🇺 AUD</option><option value="CAD">🇨🇦 CAD</option>
@@ -89,9 +352,21 @@
   </main>
 
   <footer>
-    <p>© 2026 FusionFX &nbsp;·&nbsp; <a href="shop.html">Buy Gold</a> &nbsp;·&nbsp; Rates via exchangerate-api.com</p>
+    <p>© 2026 FusionFX &nbsp;·&nbsp; <a href="shop.html">Buy Gold</a> &nbsp;·&nbsp; Rates via exchangerate-api.com &nbsp;·&nbsp; For informational purposes only</p>
   </footer>
 
+  <button id="hiddenLogin" onclick="window.location.href='admin.html'">Login</button>
+
+  <script>
+    function swapCurrencies() {
+      const from = document.getElementById('fromCurrency');
+      const to = document.getElementById('toCurrency');
+      const temp = from.value;
+      from.value = to.value;
+      to.value = temp;
+      convertCurrency(); // Assuming this function exists in script.js
+    }
+  </script>
   <script src="script.js"></script>
 </body>
 </html>

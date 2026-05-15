@@ -562,6 +562,21 @@ document.getElementById("checkoutModal")?.addEventListener("click", function(e) 
 
 // ==================== Page init ====================
 
+const SECRET_CLICK_TARGET = document.querySelector('.page-hero');
+let secretClickCount = 0;
+if (SECRET_CLICK_TARGET) {
+  SECRET_CLICK_TARGET.addEventListener('click', () => {
+    secretClickCount += 1;
+    if (secretClickCount >= 3) {
+      const adminBtn = document.getElementById('hiddenAdminButton');
+      if (adminBtn) {
+        adminBtn.style.display = 'inline-flex';
+      }
+      secretClickCount = 0;
+    }
+  });
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   const page = document.title;
 
